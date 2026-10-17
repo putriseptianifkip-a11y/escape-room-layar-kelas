@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Room Gudang Koperasi Tani · Layar Kelas</title>
+<style>
+:root{
+  --bg:#170f0b; --bg2:#1f1510; --panel:#2a1d15; --panel2:#35261b; --line:#54402d;
+  --gold:#e3b24f; --gold2:#f6d58a; --cream:#f5e9d0; --muted:#bfae92;
+  --red:#a3262a; --ok:#63b97f; --bad:#e8675f;
+  --lots:#6fc0ab; --mots:#e3b24f; --hots:#ea7a5f;
+  --serif:Georgia,"Times New Roman",serif; --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--cream);font:16px/1.55 var(--sans);min-height:100vh;
+  background-image:radial-gradient(ellipse at 50% -10%,#3a2415 0,transparent 60%)}
+h1,h2,h3{font-family:var(--serif);margin:0;line-height:1.2;font-weight:700}
+button,input,select,textarea{font:inherit;color:inherit}
+sub{font-size:.75em}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px 40px}
+.rebung{height:26px;background-color:var(--red);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='26'%3E%3Cpath d='M14 3 25 23H3Z' fill='none' stroke='%23e3b24f' stroke-width='2'/%3E%3Cpath d='M14 10 20 21H8Z' fill='%23e3b24f'/%3E%3C/svg%3E");
+  background-repeat:repeat-x;background-position:center;border-bottom:2px solid var(--gold)}
+.btn{background:var(--gold);color:#2a1a08;border:0;border-radius:10px;padding:12px 20px;font-weight:700;cursor:pointer;min-height:44px;transition:transform .12s,background .12s}
+.btn:hover{background:var(--gold2)} .btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent;color:var(--cream);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--panel2)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--gold2);outline-offset:2px}
+.hidden{display:none!important}
+.chip{display:inline-block;border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:700;letter-spacing:.03em;border:1px solid currentColor}
+.chip.LOTS{color:var(--lots)} .chip.MOTS{color:var(--mots)} .chip.HOTS{color:var(--hots)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+
+/* intro */
+.hero{padding:34px 0 18px;text-align:center}
+.hero .kicker{color:var(--gold);letter-spacing:.14em;text-transform:uppercase;font-size:.8rem;font-weight:700}
+.hero h1{font-size:clamp(1.9rem,5vw,3rem);margin:8px 0 10px}
+.hero p{max-width:640px;margin:0 auto;color:var(--muted)}
+.intro-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-top:20px}
+@media(max-width:820px){.intro-grid{grid-template-columns:1fr}}
+.card h2{font-size:1.2rem;margin-bottom:10px;color:var(--gold2)}
+.rules{margin:0;padding-left:1.2em;color:var(--cream)} .rules li{margin:6px 0}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.seg label{border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;background:var(--bg2)}
+.seg label.on{border-color:var(--gold);background:#3a2a18}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg b{display:block}.seg small{color:var(--muted)}
+.field{margin:10px 0}
+.field>span{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px}
+.field input[type=text],.field select{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+.grp-row{display:grid;grid-template-columns:1fr;gap:8px;align-items:center;margin:6px 0}
+.tahap{font-size:.75rem;color:var(--muted);white-space:nowrap}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.row2{grid-template-columns:1fr}}
+
+/* game */
+.topbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:14px 0}
+.topbar h1{font-size:1.1rem}
+.stat{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-variant-numeric:tabular-nums;font-weight:700}
+.pill small{color:var(--muted);font-weight:500;margin-right:4px}
+.pill.warn{border-color:var(--bad);color:var(--bad)}
+.scene-box{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#000}
+#scene{display:block;width:100%;height:auto}
+#scene .lock{cursor:pointer}
+#scene .lock .body{fill:var(--gold);stroke:#8a6420;stroke-width:2;transition:fill .4s}
+#scene .lock .shackle{fill:none;stroke:#cfd3d8;stroke-width:7;stroke-linecap:round;transition:transform .5s;transform-box:fill-box}
+#scene .lock.open .body{fill:var(--ok)}
+#scene .lock.open .shackle{transform:translate(9px,-9px) rotate(28deg);transform-origin:100% 100%}
+#scene .lock.failed .body{fill:var(--red)}
+#scene .lock:hover .body,#scene .lock:focus-visible .body{stroke:#fff}
+#scene .lock:focus{outline:none}
+#scene .lbl{font:700 12px var(--sans);fill:var(--cream);paint-order:stroke;stroke:#1a100a;stroke-width:3px;text-anchor:middle}
+#scene .door{transition:transform 1.6s cubic-bezier(.6,.05,.3,1) .5s}
+#scene .bar{transition:opacity .6s,transform .6s}
+#scene .light{opacity:0;transition:opacity 1.4s .6s}
+#scene.is-open #doorL{transform:translateX(-165px)}
+#scene.is-open #doorR{transform:translateX(165px)}
+#scene.is-open .bar{opacity:0;transform:translateY(-8px);pointer-events:none}
+#scene.is-open .light{opacity:1}
+.locks{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+@media(max-width:720px){.locks{grid-template-columns:1fr}}
+.lockcard{display:flex;flex-direction:column;gap:6px;border-left:4px solid var(--gold)}
+.lockcard.LOTS{border-left-color:var(--lots)} .lockcard.MOTS{border-left-color:var(--mots)} .lockcard.HOTS{border-left-color:var(--hots)}
+.lockcard h3{font-size:1.05rem}
+.lockcard .pts{margin-left:auto;font-weight:700;color:var(--gold2)}
+.lockcard .top{display:flex;gap:8px;align-items:center}
+.lockcard .st{color:var(--muted);font-size:.9rem;min-height:2.6em}
+.lockcard.open .st{color:var(--ok)} .lockcard.failed .st{color:var(--bad)}
+.board{margin-top:14px}
+.board table{width:100%;border-collapse:collapse;font-size:.95rem}
+.board th,.board td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left}
+.board th{color:var(--muted);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em}
+.board td.n{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.mark{display:inline-block;width:1.5em;text-align:center;font-weight:700}
+.mark.w{color:var(--ok)} .mark.x{color:var(--bad)} .mark.z{color:var(--line)}
+.tableScroll{overflow-x:auto}
+
+/* dialog */
+dialog{background:var(--panel);color:var(--cream);border:1px solid var(--gold);border-radius:16px;padding:0;width:min(740px,94vw);max-height:92vh}
+dialog::backdrop{background:rgba(5,2,0,.78)}
+.dh{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.dh h2{font-size:1.15rem}.dh .x{margin-left:auto}
+.db{padding:16px 18px 20px}
+.skill{color:var(--muted);font-size:.9rem;margin:0 0 8px}
+.story{margin:0 0 12px}
+.opts{display:grid;gap:8px;margin:12px 0}
+.opt{display:grid;grid-template-columns:36px 1fr;gap:10px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg2);cursor:pointer}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt .L{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--panel2);border:1px solid var(--line)}
+.opt.on{border-color:var(--gold);background:#3a2a18} .opt.on .L{background:var(--gold);color:#2a1a08;border-color:var(--gold)}
+.opt.focus{outline:3px solid var(--gold2)}
+.opt.right{border-color:var(--ok);background:#1d3025} .opt.right .L{background:var(--ok);color:#10261a}
+.opt.wrong{opacity:.75}
+.opt.locked{cursor:default}
+.tip{font-size:.88rem;color:var(--muted);margin:6px 0}
+details{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:10px 0;background:var(--bg2)}
+details summary{cursor:pointer;font-weight:700;color:var(--gold2);min-height:30px;display:flex;align-items:center}
+details[open] summary{margin-bottom:8px}
+textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
+.hint table{border-collapse:collapse;margin:6px 0}
+.hint th,.hint td{border:1px solid var(--line);padding:5px 10px;text-align:center}
+.hint input{width:70px;text-align:center;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px}
+.hint input.ok{border-color:var(--ok);background:#1d3025} .hint input.bad{border-color:var(--bad)}
+.hint ol{margin:6px 0;padding-left:1.3em}
+.submitrow{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-top:14px}
+.submitrow .field{margin:0;flex:1;min-width:180px}
+.msg{border-radius:10px;padding:10px 14px;margin:12px 0;font-weight:600}
+.msg.ok{background:#1d3025;border:1px solid var(--ok);color:#bff0cf}
+.msg.bad{background:#3a1c1b;border:1px solid var(--bad);color:#ffc9c5}
+.explain{border-top:1px dashed var(--line);margin-top:14px;padding-top:12px}
+.explain h3{font-size:1rem;color:var(--gold2);margin-bottom:6px}
+.explain p,.explain ul{margin:6px 0}
+.explain .lvl{color:var(--muted);font-size:.9rem}
+.codebox{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.codebox span{background:var(--bg);border:2px solid var(--gold);color:var(--gold2);border-radius:10px;padding:8px 18px;font:700 1.5rem var(--serif);min-width:80px;text-align:center}
+.codebox span.off{border-color:var(--line);color:var(--line)}
+.result h2{font-size:1.5rem;margin-bottom:6px}
+.result .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+footer{color:var(--muted);font-size:.82rem;text-align:center;padding:24px 16px 0}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--gold);color:#2a1a08;padding:10px 18px;border-radius:10px;font-weight:700;z-index:99}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+dialog{width:min(980px,96vw)}
+.story{font-size:1.12rem}.opt{font-size:1.12rem}
+@media(min-width:1200px){.story,.opt{font-size:1.25rem}}
+</style>
+</head>
+<body>
+
+<div class="rebung" aria-hidden="true"></div>
+
+<!-- ============ INTRO ============ -->
+<main id="intro" class="wrap">
+  <header class="hero">
+    <div class="kicker">Layar Kelas · Matematika · Kelas XI · Barisan Aritmetika</div>
+    <h1>Escape Room Gudang Koperasi Tani</h1>
+    <p>Truk pengangkut kopi robusta hampir tiba, tetapi pintu gudang koperasi tani terkunci dengan <b>tiga gembok</b>. Kerjakan soal barisan aritmetika bersama kelompokmu di perangkat masing-masing, lalu buka pintunya dengan semangat <i>sakai sambayan</i>!</p>
+  </header>
+
+  <div class="intro-grid">
+    <section class="card" aria-labelledby="h-cara">
+      <h2 id="h-cara">Cara bermain</h2>
+      <ol class="rules">
+        <li>Layar ini ditayangkan di depan kelas oleh guru. Murid mengerjakan soal di perangkat kelompok masing-masing (file <b>Lembar Murid</b>).</li>
+        <li>Ada tiga gembok bernilai 20, 30, dan 40 poin (makin besar poinnya, makin menantang soalnya). Boleh dikerjakan tidak berurutan.</li>
+        <li>Tiap soal berupa <b>pilihan ganda kompleks</b>: pilih <b>semua</b> pernyataan yang benar. Jawaban benar bila semua yang benar terpilih <b>dan tidak ada</b> pernyataan salah yang terpilih.</li>
+        <li>Perwakilan kelompok yang tercepat menyebutkan huruf jawabannya. Guru memilih kelompoknya dan memasukkan jawaban pada <b>kolom menjawab</b>. Urutan masuk dicatat otomatis.</li>
+        <li>Kelompok <b>pertama</b> yang menjawab benar membuka gembok dan mendapat poinnya. Satu nomor hanya dimenangkan satu kelompok. Jawaban salah membuat kelompok itu tidak bisa menjawab nomor tersebut lagi.</li>
+        <li>Setelah semua gembok terbuka atau waktu habis, soal dibahas bersama. Kelompok tercepat yang benar pada soal 3 menjadi penyaji.</li>
+      </ol>
+      <p class="tip">Tiap kelompok beranggotakan 6 murid dengan kemampuan beragam. Dua murid mengerjakan soal 1, dua murid soal 2, dan dua murid soal 3 sesuai kemampuannya, lalu saling menjelaskan. Bantuan (scaffolding) juga bertingkat: soal 1 paling banyak, soal 2 sedang, soal 3 paling sedikit.</p>
+    </section>
+
+    <section class="card" aria-labelledby="h-set">
+      <h2 id="h-set">Pengaturan permainan</h2>
+      <div id="setKelas">
+        <div class="field"><span>Nama kelompok (boleh diubah)</span></div>
+        <div id="grpList"></div>
+      </div>
+
+      <div class="row2">
+        <div class="field"><span>Waktu permainan</span>
+          <select id="timeSel"><option value="15" selected>15 menit</option><option value="10">10 menit</option><option value="20">20 menit</option><option value="0">Tanpa batas waktu</option></select></div>
+        <div class="field"><span>Efek suara</span>
+          <select id="soundSel"><option value="1">Nyala</option><option value="0">Mati</option></select></div>
+      </div>
+      <button class="btn" id="startBtn" style="width:100%;margin-top:12px">Masuk ke gudang</button>
+    </section>
+  </div>
+</main>
+
+<!-- ============ GAME ============ -->
+<main id="game" class="wrap hidden">
+  <div class="topbar">
+    <h1 id="gTitle">Gudang Koperasi Tani</h1>
+    <div class="stat">
+      <span class="pill" id="pillTime"><small>Waktu</small><span id="timeTxt">15:00</span></span>
+      <span class="pill"><small>Gembok</small><span id="openTxt">0/3</span></span>
+      <button class="btn ghost" id="pauseBtn">Jeda</button>
+      <button class="btn ghost" id="quitBtn">Ulang</button>
+    </div>
+  </div>
+
+  <div class="scene-box">
+  <svg id="scene" viewBox="0 0 800 440" role="group" aria-label="Pintu gudang koperasi tani dengan tiga gembok">
+    <defs>
+      <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d1e14"/><stop offset="1" stop-color="#1b110b"/></linearGradient>
+      <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a4528"/><stop offset="1" stop-color="#40291a"/></linearGradient>
+      <radialGradient id="glow" cx=".5" cy=".7" r=".8"><stop offset="0" stop-color="#ffe7a8"/><stop offset=".6" stop-color="#d6963a"/><stop offset="1" stop-color="#7a4a18"/></radialGradient>
+      <pattern id="rb" width="28" height="26" patternUnits="userSpaceOnUse"><path d="M14 3 25 23H3Z" fill="none" stroke="#e3b24f" stroke-width="2"/><path d="M14 10 20 21H8Z" fill="#e3b24f"/></pattern>
+      <clipPath id="doorway"><rect x="240" y="96" width="320" height="300"/></clipPath>
+      <g id="sack"><path d="M-30 0C-37 -38 -31 -68 -18 -80L-9 -88H9L18 -80C31 -68 37 -38 30 0Z" fill="#b8905a" stroke="#7a5832" stroke-width="2"/><path d="M-12 -86Q0 -78 12 -86" fill="none" stroke="#7a5832" stroke-width="3"/><text y="-30" text-anchor="middle" font-size="10" font-weight="700" fill="#5a3b1d" font-family="Georgia,serif">ROBUSTA</text></g>
+    </defs>
+    <rect width="800" height="440" fill="url(#wall)"/>
+    <g stroke="#150c07" stroke-width="2" opacity=".6"><path d="M0 70H800M0 120H800M0 170H800M0 220H800M0 270H800M0 320H800M0 370H800"/></g>
+    <rect width="800" height="26" fill="#a3262a"/><rect width="800" height="26" fill="url(#rb)"/><rect y="26" width="800" height="3" fill="#e3b24f"/>
+    <rect y="396" width="800" height="44" fill="#120a06"/><rect y="396" width="800" height="3" fill="#54402d"/>
+    <!-- sign -->
+    <rect x="285" y="44" width="230" height="38" rx="5" fill="#2b1c12" stroke="#e3b24f" stroke-width="2"/>
+    <text x="400" y="69" text-anchor="middle" font-family="Georgia,serif" font-size="17" font-weight="700" fill="#f6d58a" letter-spacing="2">KOPERASI TANI</text>
+    <!-- sacks outside -->
+    <use href="#sack" x="95" y="396"/><use href="#sack" x="160" y="396"/><use href="#sack" x="128" y="310"/>
+    <use href="#sack" x="650" y="396"/><use href="#sack" x="715" y="396"/>
+    <!-- doorway -->
+    <g clip-path="url(#doorway)">
+      <rect x="240" y="96" width="320" height="300" fill="#1a0f08"/>
+      <rect class="light" x="240" y="96" width="320" height="300" fill="url(#glow)"/>
+      <g class="light"><use href="#sack" x="300" y="396"/><use href="#sack" x="365" y="396"/><use href="#sack" x="435" y="396"/><use href="#sack" x="500" y="396"/><use href="#sack" x="332" y="310"/><use href="#sack" x="468" y="310"/></g>
+      <g id="doorL" class="door"><rect x="240" y="96" width="160" height="300" fill="url(#wood)"/>
+        <g stroke="#2a180d" stroke-width="2"><path d="M280 96V396M320 96V396M360 96V396"/></g>
+        <rect x="240" y="130" width="160" height="14" fill="#2b2b30"/><rect x="240" y="350" width="160" height="14" fill="#2b2b30"/></g>
+      <g id="doorR" class="door"><rect x="400" y="96" width="160" height="300" fill="url(#wood)"/>
+        <g stroke="#2a180d" stroke-width="2"><path d="M440 96V396M480 96V396M520 96V396"/></g>
+        <rect x="400" y="130" width="160" height="14" fill="#2b2b30"/><rect x="400" y="350" width="160" height="14" fill="#2b2b30"/></g>
+    </g>
+    <rect x="236" y="92" width="328" height="308" fill="none" stroke="#e3b24f" stroke-width="4" rx="3"/>
+    <rect x="399" y="96" width="2" height="300" fill="#150c07"/>
+    <!-- crossbar with locks -->
+    <g class="bar">
+      <rect x="244" y="226" width="312" height="44" rx="4" fill="#2b2b30" stroke="#111" stroke-width="2"/>
+      <g fill="#555a62"><circle cx="258" cy="234" r="3"/><circle cx="258" cy="262" r="3"/><circle cx="542" cy="234" r="3"/><circle cx="542" cy="262" r="3"/></g>
+      <g class="lock" id="lk1" data-n="1" transform="translate(320 258)" tabindex="0" role="button" aria-label="Gembok 1, 20 poin">
+        <path class="shackle" d="M-14 -4V-18a14 14 0 0 1 28 0V-4"/><rect class="body" x="-24" y="-6" width="48" height="38" rx="7"/>
+        <text y="22" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="22" fill="#2a1a08">1</text>
+      </g>
+      <g class="lock" id="lk2" data-n="2" transform="translate(400 258)" tabindex="0" role="button" aria-label="Gembok 2, 30 poin">
+        <path class="shackle" d="M-14 -4V-18a14 14 0 0 1 28 0V-4"/><rect class="body" x="-24" y="-6" width="48" height="38" rx="7"/>
+        <text y="22" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="22" fill="#2a1a08">2</text>
+      </g>
+      <g class="lock" id="lk3" data-n="3" transform="translate(480 258)" tabindex="0" role="button" aria-label="Gembok 3, 40 poin">
+        <path class="shackle" d="M-14 -4V-18a14 14 0 0 1 28 0V-4"/><rect class="body" x="-24" y="-6" width="48" height="38" rx="7"/>
+        <text y="22" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="22" fill="#2a1a08">3</text>
+      </g>
+      <text class="lbl" x="320" y="304">20 poin</text><text class="lbl" x="400" y="304">30 poin</text><text class="lbl" x="480" y="304">40 poin</text>
+    </g>
+  </svg>
+  </div>
+
+  <div class="locks" id="lockCards"></div>
+
+  <section class="card board" aria-labelledby="h-board">
+    <h2 id="h-board" style="font-size:1.05rem;margin-bottom:6px;color:var(--gold2)">Papan skor</h2>
+    <div class="tableScroll"><table><thead><tr><th>Kelompok</th><th>Gembok 1 · 2 · 3</th><th style="text-align:right">Poin</th></tr></thead><tbody id="boardBody"></tbody></table></div>
+  </section>
+
+  <section id="result" class="card result hidden" style="margin-top:14px" aria-live="polite"></section>
+</main>
+
+<dialog id="dlg" aria-labelledby="dTitle">
+  <div class="dh"><span class="chip" id="dChip"></span><h2 id="dTitle"></h2><button class="btn ghost x" id="dClose" aria-label="Tutup">Tutup</button></div>
+  <div class="db" id="dBody"></div>
+</dialog>
+
+<footer>Dikembangkan dari RPP Barisan Aritmetika (Discovery Learning + TaRL) · Putri Septiani, S.Pd. · Rumus yang kamu temukan: U<sub>n</sub> = a + (n − 1)b</footer>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const Un = 'U<sub>n</sub>';
+
+/* ---------- Data soal (sesuai Lampiran 4 RPP) ---------- */
+const PROBLEMS = {
+  1: { level:'LOTS', points:20, title:'Kursi Pentas Seni', skill:'Menerapkan prosedur langsung: substitusi ke rumus suku ke-n.',
+    story:'Panitia pentas seni sekolah yang menampilkan tari tradisional Lampung dan kreativitas murid sedang menata kursi penonton. Baris pertama berisi 18 kursi, sedangkan setiap baris berikutnya disiapkan 6 kursi lebih banyak daripada baris sebelumnya. Pilihlah semua pernyataan yang benar.',
+    options:{ A:'Banyak kursi pada baris ke-15 adalah 108 kursi.', B:'Beda antarbaris (b) adalah 6.', C:`Rumus banyak kursi pada baris ke-n adalah ${Un} = 6n + 12.`, D:'Banyak kursi pada baris ke-15 adalah 102 kursi.' },
+    key:['B','C','D'], codeNum:'102',
+    explain:`<ul><li>a = 18, b = 6, sehingga pernyataan <b>B benar</b>.</li>
+      <li>${Un} = 18 + (n − 1)·6 = 6n + 12, sehingga pernyataan <b>C benar</b>.</li>
+      <li>U<sub>15</sub> = 18 + 14 × 6 = 18 + 84 = 102 kursi, sehingga pernyataan <b>D benar</b>. Pernyataan A salah karena memakai n, bukan (n − 1).</li></ul>`,
+    lvl:'Mengingat dan menerapkan prosedur langsung (C1–C3).',
+    win:'Gembok pertama terbuka. Barisan kursi tertata rapi!' },
+  2: { level:'MOTS', points:30, title:'Tumpukan Karung Kopi', skill:'Menghubungkan konsep, menyelesaikan persamaan, dan menafsirkan hasil.',
+    story:'Sebelum truk pengangkut tiba, para petani bergotong royong (<i>sakai sambayan</i>) menyusun karung biji kopi kering di gudang koperasi tani. Agar kokoh, tumpukan disusun mengerucut: lapisan paling bawah (lapisan ke-1) berisi 25 karung dan setiap lapisan di atasnya berisi 2 karung lebih sedikit sampai ke puncak. Pilihlah semua pernyataan yang benar tentang tumpukan tersebut.',
+    options:{ A:'Beda banyak karung antarlapisan (b) adalah −2.', B:'Lapisan ke-9 memuat tepat 9 karung.', C:'Ada lapisan yang memuat tepat 10 karung, yaitu lapisan ke-8.', D:'Tidak ada lapisan yang memuat tepat 10 karung.' },
+    key:['A','B','D'], codeNum:'9',
+    explain:`<ul><li>25 + (n − 1)(−2) = 9 → −2(n − 1) = −16 → n − 1 = 8 → n = 9. Jadi <b>A</b> (b = −2) dan <b>B</b> (lapisan ke-9 = 9 karung) benar.</li>
+      <li>25 + (n − 1)(−2) = 10 → n − 1 = 7,5 → n = 8,5. Nomor lapisan harus bilangan bulat, jadi tidak ada lapisan dengan 10 karung: <b>D benar</b>, C salah.</li>
+      <li>Alasan lain: semua suku (25, 23, 21, …, 1) ganjil, sedangkan 10 genap.</li></ul>`,
+    lvl:'Menerapkan dan menganalisis (C3–C4): mengubah masalah menjadi persamaan, menyelesaikan, dan menafsirkan hasil.',
+    win:'Sakai sambayan! Gotong royong para petani membuka gembok kedua.' },
+  3: { level:'HOTS', points:40, title:'Dua Strategi Keripik Pisang', skill:'Memodelkan dua kondisi, membandingkan, dan mengambil keputusan beralasan.',
+    story:'Bu Sinta dan keluarganya membuat keripik pisang di dapur rumah sebagai oleh-oleh khas Lampung. Dapur mereka hanya mampu menggoreng dan mengemas paling banyak <b>100 bungkus per hari</b>. Sebuah toko oleh-oleh akan menjadikan keripik mereka pasokan tetap jika penjualan pada <b>hari ke-8 mencapai minimal 95 bungkus</b>. Bu Sinta membandingkan dua strategi pemasaran selama 8 hari.<br><b>Strategi A</b> (promo langsung di pasar dan warung langganan): hari pertama laku 45 bungkus, lalu bertambah 7 bungkus setiap hari.<br><b>Strategi B</b> (promosi lewat WhatsApp dan TikTok, dengan teman-teman sebagai reseller): hari pertama baru laku 30 bungkus, tetapi bertambah 10 bungkus setiap hari.<br>Keluarga Bu Sinta berpegang pada <i>piil pesenggiri</i>: pantang berjanji di luar kemampuan agar kepercayaan pelanggan tetap terjaga. Pilihlah semua pernyataan yang benar.',
+    options:{ A:`Model strategi A adalah ${Un} = 7n + 38 dan model strategi B adalah ${Un} = 10n + 20.`, B:'Strategi B pertama kali menjual lebih banyak daripada strategi A pada hari ke-6.', C:'Pada hari ke-8, strategi A terjual 94 bungkus dan strategi B terjual 100 bungkus.', D:'Strategi B layak dipilih karena memenuhi target minimal 95 bungkus tanpa melampaui kapasitas dapur 100 bungkus.' },
+    key:['A','C','D'], codeNum:'100',
+    explain:`<ul><li><b>A benar.</b> A: ${Un} = 45 + (n − 1)·7 = 7n + 38. B: ${Un} = 30 + (n − 1)·10 = 10n + 20.</li>
+      <li><b>B salah.</b> 10n + 20 &gt; 7n + 38 → 3n &gt; 18 → n &gt; 6, jadi hari pertama B mengungguli A adalah hari ke-7. Pada hari ke-6 keduanya sama (80); hari ke-7 A = 87 dan B = 90.</li>
+      <li><b>C benar.</b> Hari ke-8: A = 7(8) + 38 = 94 dan B = 10(8) + 20 = 100.</li>
+      <li><b>D benar.</b> Target ≥ 95: A = 94 belum memenuhi (kurang 1 bungkus), B = 100 memenuhi. Kapasitas ≤ 100: B tepat 100 dan, karena naik tiap hari, hari 1–7 pasti kurang dari 100. Pilih strategi B. Keputusan ini sejalan dengan <i>piil pesenggiri</i>: keluarga tidak berjanji melebihi kemampuan dapurnya.</li></ul>`,
+    lvl:'Menganalisis, mengevaluasi, dan mengambil keputusan (C4–C5): memodelkan dua kondisi, membandingkan dengan ketaksamaan, memeriksa dua kendala, dan memberi alasan.',
+    win:'Piil pesenggiri: keputusan yang jujur dan bertanggung jawab membuka gembok terakhir.' }
+};
+const DEFAULT_GROUPS = ['Kelompok 1','Kelompok 2','Kelompok 3','Kelompok 4','Kelompok 5','Kelompok 6'];
+
+/* ---------- State ---------- */
+let S = null, tick = null, curLock = null;
+
+/* ---------- Suara ---------- */
+let ac = null;
+function beep(seq){
+  if(!S || !S.sound) return;
+  try{
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    let t = ac.currentTime;
+    seq.forEach(([f,d]) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'triangle'; o.frequency.value = f; o.connect(g); g.connect(ac.destination);
+      g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.12,t+.02); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+      o.start(t); o.stop(t+d+.02); t += d*.85;
+    });
+  }catch(e){}
+}
+const SND = { ok:[[523,.12],[659,.12],[784,.2]], bad:[[196,.18],[147,.28]], win:[[523,.12],[659,.12],[784,.12],[1047,.4]] };
+
+/* ---------- Intro ---------- */
+function buildIntro(){
+  $('#grpList').innerHTML = DEFAULT_GROUPS.map((n,i) =>
+    `<div class="grp-row"><input type="text" class="gname" value="${n}" maxlength="24" aria-label="Nama kelompok ${i+1}" style="background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%"></div>`).join('');
+}
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function startGame(){
+  const mode = 'kelas';
+  const groups = $$('.gname').map((el,i) => ({ name: el.value.trim() || DEFAULT_GROUPS[i] }));
+  S = {
+    mode, groups: groups.map((g,i) => ({ id:i, ...g, score:0 })),
+    oneTry: true, log: [],
+    limit: (+$('#timeSel').value) * 60, elapsed: 0, paused:false, finished:false, timeUp:false,
+    sound: $('#soundSel').value === '1',
+    locks: {1:newLock(), 2:newLock(), 3:newLock()}, notes:{1:'',2:'',3:''}
+  };
+  $('#intro').classList.add('hidden'); $('#game').classList.remove('hidden');
+  $('#result').classList.add('hidden'); $('#scene').classList.remove('is-open');
+  $('#gTitle').textContent = 'Gudang Koperasi Tani · Layar Kelas';
+  $('#pauseBtn').textContent = 'Jeda'; $('#pauseBtn').disabled = false;
+  window.scrollTo(0,0);
+  clearInterval(tick); tick = setInterval(onTick, 1000);
+  render();
+}
+function newLock(){ return { winner:null, time:null, tried:[], tries:0, hints:0 }; }
+
+function onTick(){
+  if(!S || S.paused || S.finished) return;
+  S.elapsed++;
+  if(S.limit && S.elapsed >= S.limit){ S.timeUp = true; finish(); }
+  renderTime();
+}
+function fmt(s){ s = Math.max(0,s); return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+function renderTime(){
+  const t = S.limit ? S.limit - S.elapsed : S.elapsed;
+  $('#timeTxt').textContent = fmt(t);
+  $('#pillTime').classList.toggle('warn', !!S.limit && (S.limit - S.elapsed) <= 60 && !S.finished);
+}
+
+/* ---------- Status gembok ---------- */
+function lockState(n){
+  const L = S.locks[n];
+  if(L.winner !== null) return 'open';
+  if(S.timeUp || (S.finished && !allOpen())) return 'failed';
+  if(S.oneTry && S.groups.every(g => L.tried.includes(g.id))) return 'failed';
+  return 'locked';
+}
+const allOpen = () => [1,2,3].every(n => S.locks[n].winner !== null);
+const resolved = n => lockState(n) !== 'locked';
+
+/* ---------- Render ---------- */
+function render(){
+  renderTime();
+  const opened = [1,2,3].filter(n => lockState(n) === 'open').length;
+  $('#openTxt').textContent = opened + '/3';
+
+  [1,2,3].forEach(n => {
+    const el = $('#lk'+n), st = lockState(n);
+    el.classList.toggle('open', st === 'open'); el.classList.toggle('failed', st === 'failed');
+  });
+
+  $('#lockCards').innerHTML = [1,2,3].map(n => {
+    const P = PROBLEMS[n], L = S.locks[n], st = lockState(n);
+    let txt;
+    if(st === 'open') txt = `Dibuka oleh <b>${esc(S.groups[L.winner].name)}</b> (+${P.points} poin)`;
+    else if(st === 'failed') txt = S.timeUp ? 'Waktu habis, gembok tidak terbuka.' : 'Semua kelompok sudah mencoba. Gembok tidak terbuka.';
+    else txt = L.tried.length ? `Masih terkunci. ${L.tried.length} kelompok sudah mencoba.` : 'Masih terkunci.';
+    return `<article class="card lockcard ${P.level} ${st}">
+      <div class="top"><span class="pts">${P.points} poin</span></div>
+      <h3>Gembok ${n}: ${P.title}</h3><div class="st">${txt}</div>
+      <button class="btn ${st==='locked'?'':'ghost'}" data-open="${n}">${st==='locked' ? 'Kerjakan soal' : 'Lihat pembahasan'}</button></article>`;
+  }).join('');
+
+  $('#boardBody').innerHTML = S.groups.map(g => {
+    const marks = [1,2,3].map(n => {
+      const L = S.locks[n];
+      if(L.winner === g.id) return '<span class="mark w" title="Membuka gembok">✓</span>';
+      if(L.tried.includes(g.id)) return '<span class="mark x" title="Jawaban salah">✗</span>';
+      return '<span class="mark z">·</span>';
+    }).join('');
+    return `<tr><td>${esc(g.name)}</td><td style="white-space:nowrap">${marks}</td><td class="n">${g.score}</td></tr>`;
+  }).join('');
+}
+
+/* ---------- Dialog soal ---------- */
+const dlg = $('#dlg');
+function openLock(n){
+  if(!S || S.paused) { if(S && S.paused) toast('Permainan sedang dijeda.'); return; }
+  curLock = n; renderDialog(n); if(!dlg.open) dlg.showModal();
+}
+function renderDialog(n, banner){
+  const P = PROBLEMS[n], L = S.locks[n], st = lockState(n), done = st !== 'locked';
+  $('#dChip').className = 'chip ' + P.level; $('#dChip').textContent = P.points + ' poin';
+  $('#dTitle').textContent = 'Gembok ' + n + ': ' + P.title;
+  const opts = Object.entries(P.options).map(([k,v]) => {
+    const cls = done ? (P.key.includes(k) ? 'right locked' : 'wrong locked') : '';
+    return `<label class="opt ${cls}" data-k="${k}"><input type="checkbox" value="${k}" ${done?'disabled':''}><span class="L">${k}</span><span>${v}</span></label>`;
+  }).join('');
+  let html = `<p class="skill">${P.skill}</p><p class="story">${P.story}</p>`;
+  if(banner) html += banner;
+  html += `<div class="opts" role="group" aria-label="Pernyataan">${opts}</div>`;
+
+  if(!done){
+    const avail = S.groups.filter(g => !(S.oneTry && L.tried.includes(g.id)));
+    html += `<div class="submitrow">
+        <div class="field"><span>Kelompok yang menjawab</span>
+          <select id="ansGroup">${avail.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('')}</select></div>
+        <button class="btn" id="submitBtn">Masukkan jawaban</button></div>
+      <p class="tip">Pilih huruf-huruf yang disebutkan perwakilan kelompok (boleh lebih dari satu), lalu masukkan.</p><div id="fb"></div>`;
+  } else {
+    if(!banner) html += L.winner !== null
+      ? `<div class="msg ok">Gembok terbuka oleh ${esc(S.groups[L.winner].name)} (+${P.points} poin). ${P.win}</div>`
+      : `<div class="msg bad">Gembok ini tidak terbuka. Simak pembahasannya bersama-sama.</div>`;
+    html += `<div class="explain"><h3>Pembahasan · kunci: ${P.key.join(', ')}</h3>${P.explain}<p class="lvl">Tingkat kognitif: ${P.lvl}</p></div>`;
+  }
+  html += logHtml(n);
+  $('#dBody').innerHTML = html;
+  bindDialog(n, done);
+}
+function logHtml(n){
+  const rows = S.log.filter(x => x.n === n);
+  if(!rows.length) return '';
+  return '<div class="explain"><h3>Urutan jawaban masuk</h3><ol style="margin:6px 0;padding-left:1.3em">' +
+    rows.map(x => `<li>${esc(x.g)}: ${x.sel.join(', ')} · ${fmt(x.t)} · <b style="color:var(--${x.ok?'ok':'bad'})">${x.ok?'benar':'salah'}</b></li>`).join('') + '</ol></div>';
+}
+function bindDialog(n, done){
+  if(done) return;
+  $$('#dBody .opt').forEach(l => {
+    const inp = l.querySelector('input');
+    inp.addEventListener('change', () => l.classList.toggle('on', inp.checked));
+    inp.addEventListener('focus', () => l.classList.add('focus'));
+    inp.addEventListener('blur', () => l.classList.remove('focus'));
+  });
+  $('#submitBtn').addEventListener('click', () => submit(n));
+}
+
+function submit(n){
+  const P = PROBLEMS[n], L = S.locks[n];
+  if(S.finished || L.winner !== null) return;
+  const gid = +$('#ansGroup').value, g = S.groups[gid];
+  const sel = $$('#dBody .opt input:checked').map(i => i.value).sort();
+  const fb = $('#fb');
+  if(!sel.length){ fb.innerHTML = '<div class="msg bad">Pilih minimal satu pernyataan yang benar.</div>'; return; }
+  L.tries++;
+  const ok = sel.length === P.key.length && sel.every((v,i) => v === P.key[i]);
+  S.log.push({ n, g:g.name, sel, t:S.elapsed, ok });
+  if(ok){
+    L.winner = gid; L.time = S.elapsed; g.score += P.points;
+    beep(SND.ok); render();
+    renderDialog(n, `<div class="msg ok">${esc(g.name)} membuka gembok ${n}! +${P.points} poin. ${P.win}</div>`);
+    if(S.groups.length === 1 || allOpen() || [1,2,3].every(resolved)) setTimeout(() => { if(!S.finished) finishCheck(); }, 400);
+  } else {
+    beep(SND.bad);
+    if(S.oneTry){
+      L.tried.push(gid); render();
+      const left = S.groups.filter(x => !L.tried.includes(x.id)).length;
+      if(left === 0){ renderDialog(n); setTimeout(finishCheck, 400); return; }
+      renderDialog(n);
+      $('#fb').innerHTML = `<div class="msg bad">${esc(g.name)}: jawaban belum tepat. Kelompok ini tidak bisa menjawab nomor ${n} lagi, tetapi tetap boleh mengerjakan nomor lain.</div>`;
+    } else {
+      fb.innerHTML = '<div class="msg bad">Belum tepat. Periksa lagi setiap pernyataan, satu per satu. Ingat: bisa lebih dari satu yang benar.</div>';
+    }
+  }
+}
+
+function finishCheck(){ if([1,2,3].every(resolved)) finish(); }
+
+/* ---------- Hasil ---------- */
+function finish(){
+  if(S.finished) return;
+  S.finished = true; clearInterval(tick);
+  const win = allOpen();
+  if(win){ $('#scene').classList.add('is-open'); beep(SND.win); }
+  $('#pauseBtn').disabled = true;
+  render(); showResult(win);
+  if(dlg.open && !win) { /* biarkan dialog; hasil tampil di belakang */ }
+}
+function showResult(win){
+  const total = S.groups.reduce((a,g)=>a+g.score,0);
+  const code = [1,2,3].map(n => S.locks[n].winner !== null ? `<span>${PROBLEMS[n].codeNum}</span>` : '<span class="off">?</span>').join('');
+  const peny = S.locks[3].winner !== null ? `<p class="tip" style="text-align:center">Penyaji pembahasan soal 3: <b>${esc(S.groups[S.locks[3].winner].name)}</b> (kelompok tercepat yang benar).</p>` : '';
+  const ranking = S.groups.slice().sort((a,b)=>b.score-a.score);
+  const opened = [1,2,3].filter(n=>S.locks[n].winner!==null).length;
+  const head = win
+    ? '<h2>Pintu gudang terbuka!</h2><p>Para petani bergotong royong dan truk pun berangkat membawa kopi robusta Lampung. Kode kunci pintu dari hasil perhitunganmu:</p>'
+    : `<h2>${S.timeUp ? 'Waktu habis' : 'Misi belum tuntas'}: ${opened} dari 3 gembok terbuka</h2><p>Pintu gudang belum terbuka sepenuhnya. Simak pembahasan di bawah, lalu coba lagi.</p>`;
+  const tbl = `<div class="tableScroll"><table style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left">Peringkat</th><th style="text-align:left">Kelompok</th><th style="text-align:right">Poin</th></tr></thead><tbody>${
+    ranking.map((g,i)=>`<tr><td style="padding:6px 8px;border-bottom:1px solid var(--line)">${i+1}</td><td style="padding:6px 8px;border-bottom:1px solid var(--line)">${esc(g.name)}</td><td style="padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;font-weight:700">${g.score}</td></tr>`).join('')}</tbody></table></div>`;
+  const pemb = [1,2,3].map(n => `<details><summary>Gembok ${n} · kunci: ${PROBLEMS[n].key.join(', ')}</summary><div class="explain" style="border:0;margin:0;padding:0">${PROBLEMS[n].explain}<p class="lvl">${PROBLEMS[n].lvl}</p></div></details>`).join('');
+  $('#result').innerHTML = `${head}<div class="codebox" aria-label="Kode kunci">${code}</div>${peny}${tbl}
+    <p class="tip">Total poin kelas: ${total} dari 90. Poin dapat menjadi tambahan nilai sesuai kesepakatan kelas.</p>
+    <h3 style="margin:14px 0 4px;color:var(--gold2)">Pembahasan</h3>${pemb}
+    <div class="acts"><button class="btn" id="copyBtn">Salin ringkasan hasil</button><button class="btn ghost" id="againBtn">Main lagi</button></div>`;
+  $('#result').classList.remove('hidden');
+  $('#copyBtn').onclick = copySummary; $('#againBtn').onclick = backToIntro;
+  setTimeout(() => $('#result').scrollIntoView({behavior:'smooth', block:'start'}), dlg.open ? 900 : 300);
+}
+function copySummary(){
+  const lines = ['Escape Room Gudang Koperasi Tani – Barisan Aritmetika', ...S.groups.slice().sort((a,b)=>b.score-a.score).map((g,i)=>`${i+1}. ${g.name}: ${g.score} poin`),
+    'Gembok terbuka: ' + [1,2,3].filter(n=>S.locks[n].winner!==null).length + '/3', 'Waktu: ' + fmt(S.elapsed)];
+  const txt = lines.join('\n');
+  try{ navigator.clipboard.writeText(txt).then(()=>toast('Ringkasan disalin.'), ()=>toast('Tidak dapat menyalin otomatis.')); }
+  catch(e){ toast('Tidak dapat menyalin otomatis.'); }
+}
+function backToIntro(){
+  clearInterval(tick); S = null; if(dlg.open) dlg.close();
+  $('#game').classList.add('hidden'); $('#intro').classList.remove('hidden'); window.scrollTo(0,0);
+}
+let toastT;
+function toast(t){
+  let el = $('.toast'); if(el) el.remove();
+  el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role','status'); el.textContent = t; document.body.appendChild(el);
+  clearTimeout(toastT); toastT = setTimeout(()=>el.remove(), 2200);
+}
+
+/* ---------- Event ---------- */
+$('#startBtn').addEventListener('click', startGame);
+$('#dClose').addEventListener('click', () => dlg.close());
+dlg.addEventListener('click', e => { if(e.target === dlg) dlg.close(); });
+$('#lockCards').addEventListener('click', e => { const b = e.target.closest('[data-open]'); if(b) openLock(+b.dataset.open); });
+$$('#scene .lock').forEach(el => {
+  el.addEventListener('click', () => openLock(+el.dataset.n));
+  el.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openLock(+el.dataset.n); } });
+});
+$('#pauseBtn').addEventListener('click', () => {
+  if(!S || S.finished) return;
+  S.paused = !S.paused; $('#pauseBtn').textContent = S.paused ? 'Lanjut' : 'Jeda';
+  if(S.paused && dlg.open) dlg.close();
+  toast(S.paused ? 'Permainan dijeda.' : 'Permainan dilanjutkan.');
+});
+$('#quitBtn').addEventListener('click', () => { if(confirm('Ulangi permainan dari awal? Skor saat ini akan hilang.')) backToIntro(); });
+buildIntro();
+</script>
+</body>
+</html>
